@@ -28,33 +28,33 @@ data "aws_region" "current" {
 # --------------------
 
 resource "aws_elasticache_global_replication_group" "global" {
-  count                              = var.deploy == true ? 1 : 0
   provider                           = aws.writer
-  global_replication_group_id_suffix = "antipode-lambda"
+  count                              = var.deploy == true ? 1 : 0
+  global_replication_group_id_suffix = local.global_cluster_name
   primary_replication_group_id       = aws_elasticache_replication_group.primary[0].id
 }
 
 resource "aws_elasticache_subnet_group" "writer" {
-  count       = var.deploy == true ? 1 : 0
   provider    = aws.writer
-  name        = "antipode-lambda-writer"
-  subnet_ids  = local.subnet_ids[data.aws_region.current.name]
+  count       = var.deploy == true ? 1 : 0
+  name        = "${local.elasticache_subnet_name}-writer"
+  subnet_ids  = local.vpc_config[data.aws_region.current.name].subnet_ids
 }
 
 resource "aws_elasticache_subnet_group" "reader" {
-  count       = var.deploy == true ? 1 : 0
   provider    = aws.reader
-  name        = "antipode-lambda-reader"
-  subnet_ids  = local.subnet_ids[data.aws_region.current.name]
+  count       = var.deploy == true ? 1 : 0
+  name        = "${local.elasticache_subnet_name}-reader"
+  subnet_ids  = local.vpc_config[data.aws_region.current.name].subnet_ids[0]
 }
 
 resource "aws_elasticache_replication_group" "primary" {
-  count                         = var.deploy == true ? 1 : 0
   provider                      = aws.writer
-  replication_group_id          = "antipode-lambda-writer"
+  count                         = var.deploy == true ? 1 : 0
+  replication_group_id          = "${local.global_cluster_name}-writer"
   description                   = "Primary elasticache cluster in writer region"
-  node_type                     = "cache.r5.large"
-  port                          = 6379
+  node_type                     = local.node_type
+  port                          = local.port
   snapshot_retention_limit      = 0
   apply_immediately             = true
   num_cache_clusters            = 2
@@ -64,12 +64,12 @@ resource "aws_elasticache_replication_group" "primary" {
 }
 
 resource "aws_elasticache_replication_group" "secondary" {
-  count                         = var.deploy == true ? 1 : 0
   provider                      = aws.reader
-  replication_group_id          = "antipode-lambda-reader"
+  count                         = var.deploy == true ? 1 : 0
+  replication_group_id          = "${local.global_cluster_name}-reader"
   description                   = "Secondary elasticache cluster in reader region"
   global_replication_group_id   = aws_elasticache_global_replication_group.global[0].global_replication_group_id
-  port                          = 6379
+  port                          = local.port
   snapshot_retention_limit      = 0
   apply_immediately             = true
   num_cache_clusters            = 2

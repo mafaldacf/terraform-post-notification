@@ -1,7 +1,15 @@
 locals {
-    # two subnets for each vpc since we need 2 nodes per cluster with multi AZ enabled
-    subnet_ids = {
-        eu-central-1 = ["subnet-0a722afed0c224760", "subnet-0392ab5735b5a96bb"]
-        us-east-1    = ["subnet-0ec25eaeb81642e55", "subnet-089b2efc49354bfee"]
+    # Mandatory variables
+    json_vpc_eu = file("${path.root}/config/vpc_eu-central-1.json")
+    json_vpc_us = file("${path.root}/config/vpc_us-east-1.json")
+    vpc_config = {
+        "eu-central-1" = jsondecode(local.json_vpc_eu)[0]
+        "us-east-1"    = jsondecode(local.json_vpc_us)[0]
     }
+    
+    # User preference
+    global_cluster_name = "antipode-lambda"
+    elasticache_subnet_name = "antipode-lambda"
+    port = 6379
+    node_type = "cache.r5.large"
 }

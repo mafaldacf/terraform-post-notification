@@ -16,11 +16,11 @@ data "aws_region" "current" {
 # -------------------
 
 resource "aws_s3_bucket" "lambdas" {
-  bucket  = local.bucket_name_lambdas[data.aws_region.current.name]
+  bucket  = local.s3_config.bucket_name_lambdas[data.aws_region.current.name]
 }
 
 resource "aws_s3_bucket_public_access_block" "lambdas" {
-  bucket                  = local.bucket_name_lambdas[data.aws_region.current.name]
+  bucket                  = local.s3_config.bucket_name_lambdas[data.aws_region.current.name]
   block_public_acls       = true
   block_public_policy     = true
   ignore_public_acls      = true
@@ -33,11 +33,11 @@ resource "aws_s3_bucket_public_access_block" "lambdas" {
 
 
 resource "aws_s3_bucket" "posts" {
-  bucket  = local.bucket_name_posts[data.aws_region.current.name]
+  bucket  = local.s3_config.bucket_name_posts[data.aws_region.current.name]
 }
 
 resource "aws_s3_bucket_public_access_block" "posts" {
-  bucket                  = local.bucket_name_posts[data.aws_region.current.name]
+  bucket                  = local.s3_config.bucket_name_posts[data.aws_region.current.name]
   block_public_acls       = true
   block_public_policy     = true
   ignore_public_acls      = true
@@ -45,7 +45,7 @@ resource "aws_s3_bucket_public_access_block" "posts" {
 }
 
 resource "aws_s3_bucket_versioning" "posts" {
-  bucket = local.bucket_name_posts[data.aws_region.current.name]
+  bucket = local.s3_config.bucket_name_posts[data.aws_region.current.name]
 
   versioning_configuration {
     status = "Enabled"
@@ -59,15 +59,15 @@ resource "aws_s3_bucket_replication_configuration" "writer_to_reader" {
   # must have bucket versioning enabled first
   depends_on  = [aws_s3_bucket_versioning.posts]
 
-  role        = local.s3_role_arn
-  bucket      = local.bucket_name_posts[var.writer]
+  role        = local.s3_config.s3_role_arn
+  bucket      = local.s3_config.bucket_name_posts[var.writer]
 
   rule {
     id     = "to-reader-${var.reader}"
     status = "Enabled"
 
     destination {
-      bucket        = "arn:aws:s3:::${local.bucket_name_posts[var.reader]}"
+      bucket        = "arn:aws:s3:::${local.s3_config.bucket_name_posts[var.reader]}"
     }
   }
 }
@@ -77,7 +77,7 @@ resource "aws_s3_bucket_replication_configuration" "writer_to_reader" {
 # ------------------------------------------------------
 
 resource "aws_s3_bucket_lifecycle_configuration" "posts_rendezvous" {
-  bucket = local.bucket_name_posts[data.aws_region.current.name]
+  bucket = local.s3_config.bucket_name_posts[data.aws_region.current.name]
 
   rule {
     id = "rendezvous-expiration"

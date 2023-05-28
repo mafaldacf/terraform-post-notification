@@ -12,6 +12,6 @@ terraform {
 # --------------
 
 resource "aws_sqs_queue" "evaluation" {
-    name        = local.queue_name
+    name        = local.sqs_config.queue_name
     fifo_queue  = false
 }

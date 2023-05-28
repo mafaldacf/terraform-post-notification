@@ -1,0 +1,52 @@
+{
+    "vpc" : {
+        "vpc_cidr_blocks": {
+            "eu-central-1": "55.0.0.0/16",
+            "us-east-1"   : "56.0.0.0/16"
+        },
+        "subnet_cidr_blocks": {
+            "eu-central-1": ["55.0.0.0/20", "55.0.16.0/20"],
+            "us-east-1": ["56.0.0.0/20", "56.0.16.0/20"]
+        },
+        "rendezvous_port": {
+            "eu-central-1": 8001,
+            "us-east-1": 8002
+        },
+        "ssh_cidr": "0.0.0.0/0"
+    },
+    "ec2": {
+        "ami": {
+            "eu-central-1": "ami-0a1ce875891dacd0b",
+            "us-east-1": "ami-08ccbaf0c4c036025"
+        },
+        "rsa_keypair_name": {
+            "eu-central-1": "rendezvous-eu",
+            "us-east-1": "rendezvous-us"
+        }
+    },
+    "s3": {
+        "bucket_name_lambdas": {
+            "eu-central-1": "antipode-lambda-eu-2",
+            "us-east-1": "antipode-lambda-us-2"
+        },
+        "bucket_name_posts": {
+            "eu-central-1": "antipode-lambda-posts-eu-2",
+            "us-east-1": "antipode-lambda-posts-us-2"
+        },
+        "s3_role_arn": "arn:aws:iam::851889773113:role/antipode-lambda-s3-admin"
+    },
+    "sns": {
+        "topic_name": "antipode-lambda-notifications-test"
+    },
+    "sqs": {
+        "queue_name": "antipode-lambda-eval-test"
+    },
+    "dynamo": {
+        "tables_keys": {
+            "blobs": "k",
+            "keyvalue": "k",
+            "cscopes": "cid",
+            "rendezvous": "bid"
+        }
+    }
+}

@@ -1,21 +1,16 @@
 locals {
-    # REMINDER: 
-    # must have vpcs and subnets created and MANUALLY generate new rsa pairs before creating EC2 instances
-    # only then we can instance_settingsure the necessary EC2 parameters (rsa_key_pair, subnet_id, sg_id)
-    instance_settings = {
-        "eu-central-1" = {
-            # e.g. previously created subnet with subnet CIDR = 50.0.0.0/20
-            ami                 = "ami-0783316fe04d26e86" 
-            rsa_key_pair        = "rendezvous-eu" 
-            subnet_id           = "subnet-0a722afed0c224760"
-            sg_id               = "sg-05bd2b399593b86cf"
-        }, 
-        "us-east-1" = {
-            # e.g. previously created subnet with CIDR = 51.0.0.0/20
-            ami                 = "ami-08ccbaf0c4c036025" 
-            rsa_key_pair        = "rendezvous-us"
-            subnet_id           = "subnet-0ec25eaeb81642e55"
-            sg_id               = "sg-00df9c3bcb92c8bfd"
-        }
+    # Mandatory variables
+    json_vpc_eu = file("${path.root}/config/vpc_eu-central-1.json")
+    json_vpc_us = file("${path.root}/config/vpc_us-east-1.json")
+    vpc_config  = {
+        "eu-central-1" = jsondecode(local.json_vpc_eu)[0]
+        "us-east-1"    = jsondecode(local.json_vpc_us)[0]
     }
+    
+    json_config = file("${path.root}/config/config.json")
+    instance_settings = jsondecode(local.json_config)["ec2"]
+
+    # User preference
+    instance_type = "t2.micro"
+    instance_name = "rendezvous"
 }

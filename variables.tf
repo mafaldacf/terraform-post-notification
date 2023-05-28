@@ -36,7 +36,7 @@ variable "deploy" {
 
 variable "post_storage" {
   description   = "Storage for posts"
-  type          = bool
+  type          = string
 }
 
 variable "notification_storage" {

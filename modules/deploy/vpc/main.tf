@@ -17,10 +17,10 @@ data "aws_region" "current" {
 
 resource "aws_vpc_endpoint" "gateway_dynamodb" {
   count               = var.service == "dynamo" ? 1 : 0
-  vpc_id              = local.endpoints[data.aws_region.current.name].vpc_id
+  vpc_id              = local.vpc_config[data.aws_region.current.name].vpc_id
   service_name        = "com.amazonaws.${data.aws_region.current.name}.dynamodb"
   vpc_endpoint_type   = "Gateway"
-  route_table_ids     = [local.endpoints[data.aws_region.current.name].route_table_id]
+  route_table_ids     = [local.vpc_config[data.aws_region.current.name].route_table_id]
 
   tags = {
     Name = var.service
@@ -29,11 +29,11 @@ resource "aws_vpc_endpoint" "gateway_dynamodb" {
 
 resource "aws_vpc_endpoint" "interface_sns_or_sqs" {
   count               = var.service == "sns" || var.service == "sqs" ? 1 : 0
-  vpc_id              = local.endpoints[data.aws_region.current.name].vpc_id
+  vpc_id              = local.vpc_config[data.aws_region.current.name].vpc_id
   service_name        = "com.amazonaws.${data.aws_region.current.name}.${var.service}"
   vpc_endpoint_type   = "Interface"
-  subnet_ids          = [local.endpoints[data.aws_region.current.name].subnet_id]
-  security_group_ids  = [local.endpoints[data.aws_region.current.name].security_group_id]
+  subnet_ids          = [local.vpc_config[data.aws_region.current.name].subnet_ids[0]]
+  security_group_ids  = [local.vpc_config[data.aws_region.current.name].security_group_id]
 
   tags = {
     Name = var.service

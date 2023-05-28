@@ -10,9 +10,18 @@ provider "aws" {
   alias                       = "reader"
 }
 
-# -------------------------
-# Initialize Main Resources
-# -------------------------
+module "test" {
+  source           = "./modules/deploy/ec2"
+  count            = var.init ? 1 : 0
+  providers = {
+    aws = aws.writer
+  }
+}
+
+# -----------------------------
+# Initialize Main AWS Resources
+#   (should only happen once)
+# -----------------------------
 
 module "init_vpc_writer" {
   source           = "./modules/init/vpc"
@@ -28,6 +37,20 @@ module "init_vpc_reader" {
   providers = {
     aws = aws.reader
   }
+}
+
+# Store output from "init_vpc_writer" module into a json file in "config" directory
+resource "local_file" "output_vpc_writer_config" {
+  filename  = "config/vpc_${var.writer}.json"
+  count     = var.init ? 1 : 0
+  content   = jsonencode(module.init_vpc_writer)
+}
+
+# Store output from "init_vpc_reader" module into a json file in "config" directory
+resource "local_file" "output_vpc_reader_config" {
+  filename  = "config/vpc_${var.reader}.json"
+  count     = var.init ? 1 : 0
+  content   = jsonencode(module.init_vpc_reader)
 }
 
 module "init_dynamo" {
@@ -77,18 +100,13 @@ module "init_s3_writer" {
   }
 }
 
-# --------------------
-# Deployment Resources
-# --------------------
-
-locals {
-  vpc_endpoint_services_writer = var.post_storage == "dynamo" ? ["dynamo", "sns"] : ["sns"]
-  vpc_endpoint_services_reader = var.post_storage == "dynamo" ? ["dynamo", "sqs"] : ["sqs"]
-}
+# ---------------------
+# Deploy AWS Resources
+# ---------------------
 
 module "create_vpc_endpoint_writer" {
   source            = "./modules/deploy/vpc"
-  for_each          = var.deploy ? toset(vpc_endpoint_services_writer) : []
+  for_each          = toset(var.post_storage == "dynamo" ? ["dynamo", "sns"] : ["sns"])
   service           = each.value
   providers = {
     aws = aws.writer
@@ -97,7 +115,7 @@ module "create_vpc_endpoint_writer" {
 
 module "create_vpc_endpoint_reader" {
   source            = "./modules/deploy/vpc"
-  for_each          = var.deploy ? toset(vpc_endpoint_services_reader) : []
+  for_each          = toset(var.post_storage == "dynamo" ? ["dynamo", "sqs"] : ["sqs"])
   service           = each.value
   providers         = {
     aws = aws.reader
@@ -112,6 +130,13 @@ module "deploy_ec2_writer" {
   }
 }
 
+# Store output from "deploy_ec2_writer" module into a json file in "config" directory
+resource "local_file" "output_ec2_writer_config" {
+  filename  = "config/ec2_${var.writer}.json"
+  count     = var.init ? 1 : 0
+  content   = jsonencode(module.deploy_ec2_writer)
+}
+
 module "deploy_ec2_reader" {
   source            = "./modules/deploy/ec2"
   count             = var.deploy && var.rendezvous ? 1 : 0
@@ -120,11 +145,18 @@ module "deploy_ec2_reader" {
   }
 }
 
+# Store output from "deploy_ec2_reader" module into a json file in "config" directory
+resource "local_file" "output_ec2_reader_config" {
+  filename  = "config/ec2_${var.reader}.json"
+  count     = var.init ? 1 : 0
+  content   = jsonencode(module.deploy_ec2_reader)
+}
+
 module "deploy_redis" {
   source            = "./modules/deploy/redis"
 
   # redis module uses multiple aws provides which conflicts with using "count" here
-  # solution: pass deploy flag and the module will decide if it should run or not
+  # solution: pass deploy flag and the module will be the one deciding
   deploy            = var.deploy && var.post_storage == "redis" ? true : false
   credentials_path  = var.credentials_path
   writer            = var.writer

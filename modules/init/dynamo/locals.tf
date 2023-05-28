@@ -1,16 +1,4 @@
 locals {
-  tables = {
-    "blobs" = {
-      partition_key = "k"
-    },
-    "keyvalue" = {
-      partition_key = "k"
-    },
-    "cscopes" = {
-      partition_key = "cid"
-    },
-    "rendezvous" = {
-      partition_key = "rid"
-    }
-  }
+  json_config = file("${path.root}/config/config.json")
+  tables_config = jsondecode(local.json_config)["dynamo"]["tables_keys"]
 }

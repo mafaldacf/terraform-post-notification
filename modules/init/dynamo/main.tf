@@ -12,14 +12,14 @@ terraform {
 # --------------
 
 resource "aws_dynamodb_table" "dynamo_tables" {
-    for_each        = local.tables
+    for_each        = local.tables_config
     
     name            = each.key
     billing_mode    = "PROVISIONED"
-    hash_key        = each.value.partition_key
+    hash_key        = each.value
 
     attribute {
-        name = each.value.partition_key
+        name = each.value
         type = "S"
     }
 
