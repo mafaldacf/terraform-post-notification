@@ -1,16 +1,16 @@
-variable "create_s3_replication" {
-  description   = "Whether or not to create s3 replication from writer to reader"
+variable "replication_rule" {
+  description   = "Create s3 replication rule from writer to reader"
   default       = false
   type          = bool
 }
 
-variable "writer_region" {
+variable "writer" {
   description   = "AWS writer region"
   default       = "eu-central-1"
   type          = string
 }
 
-variable "reader_region" {
+variable "reader" {
   description   = "AWS writer region"
   default       = "us-east-1"
   type          = string

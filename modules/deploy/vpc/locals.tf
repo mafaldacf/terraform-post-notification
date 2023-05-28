@@ -1,9 +1,9 @@
 locals {
-    # IMPORTANT REMINDER: 
-    # must create vpcs with subnets!!
-    # only then we can configure the necessary endpoint parameters 
+    # REMINDER: 
+    # must first create the main vpc resources for each region
+    # only then we can endpointsure the necessary endpoint parameters 
     # (vpc_id, route_table_id, subnet_id, security_group_id)
-    config = {
+    endpoints = {
         eu-central-1 = {
             vpc_id              = "vpc-046ebde198e614a9f"
             

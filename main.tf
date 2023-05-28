@@ -1,79 +1,79 @@
 provider "aws" {
-  region                      = var.writer_region
+  region                      = var.writer
   shared_credentials_files    = [var.credentials_path]
-  alias                       = "writer_region"
+  alias                       = "writer"
 }
 
 provider "aws" {
-  region                      = var.reader_region
+  region                      = var.reader
   shared_credentials_files    = [var.credentials_path]
-  alias                       = "reader_region"
+  alias                       = "reader"
 }
 
-# --------------
-# Main Resources
-# --------------
+# -------------------------
+# Initialize Main Resources
+# -------------------------
 
-module "vpc_writer_region" {
-  source                = "./modules/vpc"
-  count                 = var.create_main_resources && var.create_main_resources_vpcs ? 1 : 0
+module "init_vpc_writer" {
+  source           = "./modules/init/vpc"
+  count            = var.init ? 1 : 0
   providers = {
-    aws = aws.writer_region
+    aws = aws.writer
   }
 }
 
-module "vpc_reader_region" {
-  source                = "./modules/vpc"
-  count                 = var.create_main_resources && var.create_main_resources_vpcs ? 1 : 0
+module "init_vpc_reader" {
+  source           = "./modules/init/vpc"
+  count            = var.init ? 1 : 0
   providers = {
-    aws = aws.reader_region
+    aws = aws.reader
   }
 }
 
-module "dynamo" {
-  source                = "./modules/dynamo"
-  count                 = var.create_main_resources && var.create_main_resources_dynamo ? 1 : 0
-  reader_region         = var.reader_region
+module "init_dynamo" {
+  source            = "./modules/init/dynamo"
+  count             = var.init ? 1 : 0
+  reader            = var.reader
   providers = {
-    aws = aws.writer_region
+    aws = aws.writer
   }
 }
 
-module "sns" {
-  source                = "./modules/sns"
-  count                 = var.create_main_resources && var.create_main_resources_sns ? 1 : 0
+module "init_sns" {
+  source            = "./modules/init/sns"
+  count             = var.init ? 1 : 0
   providers = {
-    aws = aws.writer_region
+    aws = aws.writer
   }
 }
 
-module "sqs" {
-  source                = "./modules/sqs"
-  count                 = var.create_main_resources && var.create_main_resources_sqs ? 1 : 0
+module "init_sqs" {
+  source            = "./modules/init/sqs"
+  count             = var.init ? 1 : 0
   providers = {
-    aws = aws.reader_region
+    aws = aws.reader
   }
 }
 
-module "s3_reader_region" {
-  source                    = "./modules/s3"
-  count                     = var.create_main_resources && var.create_main_resources_s3 ? 1 : 0
+module "init_s3_reader" {
+  source            = "./modules/init/s3"
+  count             = var.init ? 1 : 0
   providers = {
-    aws = aws.reader_region
+    aws = aws.reader
   }
 }
 
-module "s3_writer_region" {
-  source                    = "./modules/s3"
-  count                     = var.create_main_resources && var.create_main_resources_s3 ? 1 : 0
+module "init_s3_writer" {
+  source            = "./modules/init/s3"
+  count             = var.init ? 1 : 0
 
-  # replication rule from writer to reader
-  create_s3_replication     = true 
-  writer_region             = var.writer_region
-  reader_region             = var.reader_region
+  # create a replication rule from writer to reader
+  replication_rule  = true 
+  writer            = var.writer
+  reader            = var.reader
 
   providers = {
-    aws = aws.writer_region
+    aws = aws.writer
   }
 }
 
@@ -81,36 +81,61 @@ module "s3_writer_region" {
 # Deployment Resources
 # --------------------
 
-module "ec2_writer_reagion" {
-  source                = "./modules/ec2"
-  count                 = var.create_rendezvous_ec2_instances ? 1 : 0
+locals {
+  vpc_endpoint_services_writer = var.post_storage == "dynamo" ? ["dynamo", "sns"] : ["sns"]
+  vpc_endpoint_services_reader = var.post_storage == "dynamo" ? ["dynamo", "sqs"] : ["sqs"]
+}
+
+module "create_vpc_endpoint_writer" {
+  source            = "./modules/deploy/vpc"
+  for_each          = var.deploy ? toset(vpc_endpoint_services_writer) : []
+  service           = each.value
   providers = {
-    aws = aws.writer_region
+    aws = aws.writer
   }
 }
 
-module "ec2_reader_reagion" {
-  source                = "./modules/ec2"
-  count                 = var.create_rendezvous_ec2_instances ? 1 : 0
-  providers = {
-    aws = aws.reader_region
+module "create_vpc_endpoint_reader" {
+  source            = "./modules/deploy/vpc"
+  for_each          = var.deploy ? toset(vpc_endpoint_services_reader) : []
+  service           = each.value
+  providers         = {
+    aws = aws.reader
   }
 }
 
-module "vpc_endpoints_writer_region" {
-  source                = "./modules/vpc/endpoints"
-  for_each              = var.create_vpc_endpoints ? toset(var.endpoints_services_writer_region) : []
-  service               = each.value
+module "deploy_ec2_writer" {
+  source            = "./modules/deploy/ec2"
+  count             = var.deploy && var.rendezvous ? 1 : 0
   providers = {
-    aws = aws.writer_region
+    aws = aws.writer
   }
 }
 
-module "vpc_endpoints_reader_region" {
-  source                = "./modules/vpc/endpoints"
-  for_each              = var.create_vpc_endpoints ? toset(var.endpoints_services_reader_region) : []
-  service               = each.value
+module "deploy_ec2_reader" {
+  source            = "./modules/deploy/ec2"
+  count             = var.deploy && var.rendezvous ? 1 : 0
   providers = {
-    aws = aws.reader_region
+    aws = aws.reader
   }
+}
+
+module "deploy_redis" {
+  source            = "./modules/deploy/redis"
+
+  # redis module uses multiple aws provides which conflicts with using "count" here
+  # solution: pass deploy flag and the module will decide if it should run or not
+  deploy            = var.deploy && var.post_storage == "redis" ? true : false
+  credentials_path  = var.credentials_path
+  writer            = var.writer
+  reader            = var.reader
+}
+
+module "deploy_mysql" {
+  source            = "./modules/deploy/mysql"
+  deploy            = var.post_storage == "mysql" ? true : false
+  
+  credentials_path  = var.credentials_path
+  writer            = var.writer
+  reader            = var.reader
 }

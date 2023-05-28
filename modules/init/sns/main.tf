@@ -12,6 +12,10 @@ terraform {
 # --------------
 
 resource "aws_sns_topic" "notifications" {
-    name        = local.topic_name
-    fifo_topic  = false
+  name        = local.topic_name
+  fifo_topic  = false
+}
+
+output "sns-topic-name" {
+  value = aws_sns_topic.notifications.name
 }

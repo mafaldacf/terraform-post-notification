@@ -33,7 +33,7 @@ resource "aws_dynamodb_table" "dynamo_tables" {
     }
 
     replica {
-        region_name = var.reader_region
+        region_name = var.reader
     }
 
     tags = {

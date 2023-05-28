@@ -10,5 +10,5 @@ locals {
     rendezvous_port = "8000"
 
     # our ip -> optional for secure SSH, otherwise use "0.0.0.0/0"
-    ssh_cidr = "95.94.226.172/32"
+    ssh_cidr = "0.0.0.0/0"
 }

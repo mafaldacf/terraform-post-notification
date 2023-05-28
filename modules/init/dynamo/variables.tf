@@ -1,4 +1,4 @@
-variable "reader_region" {
+variable "reader" {
   description   = "The AWS reader region"
   type          = string
 }
