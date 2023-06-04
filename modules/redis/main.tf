@@ -7,6 +7,10 @@ terraform {
   }
 }
 
+# NOTE:
+# Both providers are defined here for simplicity
+# One module invocation => deploying resources in both regions
+
 provider "aws" {
   region                      = var.writer
   shared_credentials_files    = [var.credentials_path]

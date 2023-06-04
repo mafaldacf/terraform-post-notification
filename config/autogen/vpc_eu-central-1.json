@@ -1,8 +1,8 @@
 [
     {
-        "rendezvous_security_group_id": "sg-05bd2b399593b86cf",
         "route_table_id": "rtb-04839768d7f68d9d4",
         "security_group_id": "sg-06e89d1eec9546ab5",
+        "security_group_id_rendezvous": "sg-06e89d1eec9546ab5",
         "subnet_ids": ["subnet-0a722afed0c224760", "subnet-0392ab5735b5a96bb"],
         "vpc_id": "vpc-046ebde198e614a9f"
     }

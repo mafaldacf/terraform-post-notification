@@ -7,8 +7,8 @@ credentials_path = "~/.aws/credentials"
 # notification_storage       :string (required)
 # rendezvous                 :bool   (optional: false by default)
 
-init = true
-deploy = false
-post_storage = "redis"
-notification_storage = "asd"
-rendezvous = false
+init = false
+deploy = true
+post_storage = "dynamo"
+notification_storage = "sns"
+rendezvous = true

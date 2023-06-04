@@ -97,7 +97,6 @@ resource "aws_default_route_table" "antipode_mq" {
 # Security group for rendezvous ec2 instances
 # -------------------------------------------
 
-# new security group
 resource "aws_security_group" "rendezvous" {
   name        = "${local.name_rendezvous}"
   description = "Security group for rendezvous ssh and tcp connections"
