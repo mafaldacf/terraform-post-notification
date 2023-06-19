@@ -31,58 +31,67 @@ data "aws_region" "current" {
 # Deployment Resources
 # --------------------
 
-/* resource "aws_rds_cluster_parameter_group" "aurora_parameter_group" {
-  name        = "aurora-mysql-parameter-group"
-  family      = "aurora-mysql5.7"
+//FIXME
 
+/* resource "aws_db_parameter_group" "aurora_parameter_group" {
+  name        = "antipode-lambda"
+  family      = "aurora-mysql5.7"
   parameter {
     name  = "max_connections"
-    value = local.mysql_config["max_connections"]
+    value = local.mysql_max_connections
   }
 }
 
-resource "aws_rds_cluster" "primary_cluster" {
-  cluster_identifier            = "antipode-lambda-${var.writer}"
-  engine                        = "aurora-mysql"
-  engine_version                = "5.7.mysql_aurora.2.11.1"
-  database_name                 = "antipode"
-  master_username               = "antipode"
-  master_password               = "antipode"
-  backup_retention_period       = 7
-  preferred_backup_window       = "00:00-01:00"
-  preferred_maintenance_window  = "sun:03:00-sun:04:00"
-  deletion_protection           = true
-  copy_tags_to_snapshot         = true
-
-  db_subnet_group_name = aws_db_subnet_group.subnet_group.name
-  vpc_security_group_ids = [
-    aws_security_group.allow_all.id,
-  ]
-
-  scaling_configuration {
-    auto_pause                   = true
-    max_capacity                 = 2
-    min_capacity                 = 2
-    seconds_until_auto_pause     = 300
-    timeout_action               = "ForceApplyCapacityChange"
-  }
+resource "aws_rds_global_cluster" "mysql_cluster" {
+  provider                  = aws.writer
+  global_cluster_identifier = "antipode-lambda"
+  engine                    = "aurora-mysql"
+  engine_version            = "11.9"
+  database_name             = "5.7.mysql_aurora.2.07.1"
 }
 
-resource "aws_rds_global_cluster" "global_cluster" {
-  global_cluster_identifier     = "antipode-lambda"
-  source_db_cluster_identifier  = aws_rds_cluster.primary_cluster.id
-  engine                        = "aurora-mysql"
-  engine_version                = "5.7.mysql_aurora.2.11.1"
+resource "aws_rds_cluster" "writer" {
+  provider                  = aws.writer
+  engine                    = aws_rds_global_cluster.mysql_cluster.engine
+  engine_version            = aws_rds_global_cluster.mysql_cluster.engine_version
+  cluster_identifier        = "writer-cluster-"
+  master_username           = "antipode"
+  master_password           = "antipode"
+  database_name             = "antipode"
+  global_cluster_identifier = aws_rds_global_cluster.mysql_cluster.id
+  db_subnet_group_name      = "default"
+}
 
-  region {
-    region_name                 = var.reader
-    db_cluster_identifier       = "antipode-lambda-${var.reader}"
-    reader_endpoint_enabled     = true
-    deletion_protection         = true
-    enable_http_endpoint        = false
-  }
+resource "aws_rds_cluster_instance" "writer" {
+  provider             = aws.writer
+  engine               = aws_rds_global_cluster.mysql_cluster.engine
+  engine_version       = aws_rds_global_cluster.mysql_cluster.engine_version
+  identifier           = "writer-cluster-instance"
+  cluster_identifier   = aws_rds_cluster.primary.id
+  instance_class       = "db.r5.large"
+  db_subnet_group_name = "default"
+}
 
-  vpc_security_group_ids = [
-    aws_security_group.allow_all.id,
+resource "aws_rds_cluster" "secondary" {
+  provider                  = aws.reader
+  engine                    = aws_rds_global_cluster.mysql_cluster.engine
+  engine_version            = aws_rds_global_cluster.mysql_cluster.engine_version
+  cluster_identifier        = "reader-cluster"
+  global_cluster_identifier = aws_rds_global_cluster.mysql_cluster.id
+  skip_final_snapshot       = true
+  db_subnet_group_name      = "default"
+
+  depends_on = [
+    aws_rds_cluster_instance.writer
   ]
+}
+
+resource "aws_rds_cluster_instance" "secondary" {
+  provider             = aws.reader
+  engine               = aws_rds_global_cluster.mysql_cluster.engine
+  engine_version       = aws_rds_global_cluster.mysql_cluster.engine_version
+  identifier           = "reader-cluster-instance"
+  cluster_identifier   = aws_rds_cluster.secondary.id
+  instance_class       = "db.r5.large"
+  db_subnet_group_name = "default"
 } */

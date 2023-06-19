@@ -23,11 +23,13 @@ variable "reader" {
 variable "init" {
   description   = "Initialize primary AWS resources"
   type          = bool
+  default       = false
 }
 
 variable "deploy" {
   description   = "Deploy AWS resources for current application"
   type          = bool
+  default       = false
 }
 
 # -------

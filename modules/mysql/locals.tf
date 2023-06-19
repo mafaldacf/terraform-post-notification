@@ -6,7 +6,5 @@ locals {
     }
 
     # User preference
-    mysql_config = {
-        max_connections = 1000
-    }
+    mysql_max_connections = 2000
 }
