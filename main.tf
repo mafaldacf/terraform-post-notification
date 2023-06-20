@@ -86,6 +86,7 @@ module "init_sqs" {
 module "init_s3_reader" {
   source            = "./modules/s3"
   count             = var.init ? 1 : 0
+  region            = var.reader
   providers = {
     aws = aws.reader
   }
@@ -97,8 +98,8 @@ module "init_s3_writer" {
 
   # create a replication rule from writer to reader
   replication_rule  = true 
-  writer            = var.writer
-  reader            = var.reader
+  region            = var.writer
+  secondary_region  = var.reader
 
   providers = {
     aws = aws.writer

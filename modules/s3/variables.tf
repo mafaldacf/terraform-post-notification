@@ -4,14 +4,13 @@ variable "replication_rule" {
   type          = bool
 }
 
-variable "writer" {
-  description   = "AWS writer region"
-  default       = "eu-central-1"
+variable "region" {
+  description   = "AWS current region"
   type          = string
 }
 
-variable "reader" {
+variable "secondary_region" {
   description   = "AWS writer region"
-  default       = "us-east-1"
   type          = string
+  default       = "us-east-1"
 }

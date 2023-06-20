@@ -23,10 +23,6 @@ provider "aws" {
   alias                       = "reader"
 }
 
-data "aws_region" "current" {
-  provider = aws
-}
-
 # --------------------
 # Deployment Resources
 # --------------------
@@ -42,14 +38,14 @@ resource "aws_elasticache_subnet_group" "writer" {
   provider    = aws.writer
   count       = var.deploy == true ? 1 : 0
   name        = "${local.elasticache_subnet_name}-writer"
-  subnet_ids  = local.vpc_config[data.aws_region.current.name].subnet_ids
+  subnet_ids  = local.vpc_config[var.writer].subnet_ids
 }
 
 resource "aws_elasticache_subnet_group" "reader" {
   provider    = aws.reader
   count       = var.deploy == true ? 1 : 0
   name        = "${local.elasticache_subnet_name}-reader"
-  subnet_ids  = local.vpc_config[data.aws_region.current.name].subnet_ids[0]
+  subnet_ids  = local.vpc_config[var.reader].subnet_ids
 }
 
 resource "aws_elasticache_replication_group" "primary" {

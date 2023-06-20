@@ -20,5 +20,5 @@ writer="eu-central-1"
 reader="us-east-1"
 
 deploy = true
-post_storage = "dynamo"
+post_storage = "redis"
 notification_storage = "sns"
