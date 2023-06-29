@@ -110,19 +110,20 @@ module "init_s3_writer" {
 # Deploy AWS Resources
 # ---------------------
 
-module "create_vpc_endpoint_writer" {
+module "create_vpc_endpoint_writer_sns" {
   source            = "./modules/vpc/endpoints"
-  for_each          = toset(var.post_storage == "dynamo" && var.notification_storage == "sns" ? ["dynamo", "sns"] : [])
-  service           = each.value
+  count             = var.post_storage == "cache" ? 1 : 0
+  service           = "sns"
   providers = {
     aws = aws.writer
   }
 }
 
-module "create_vpc_endpoint_reader" {
+module "create_vpc_endpoint_writer_sqs" {
   source            = "./modules/vpc/endpoints"
+  count             = var.post_storage == "cache" ? 1 : 0
   service           = "sqs"
-  providers         = {
+  providers = {
     aws = aws.reader
   }
 }
@@ -159,13 +160,13 @@ module "deploy_mq_reader" {
   }
 }
 
-module "deploy_redis" {
-  source            = "./modules/redis"
+module "deploy_cache" {
+  source            = "./modules/cache"
 
   # REMINDER:
-  # redis module uses multiple aws provides which conflicts with using "count" here
+  # cache module uses multiple aws provides which conflicts with using "count" here
   # solution: pass deploy flag and the module will be the one deciding
-  deploy            = var.deploy && var.post_storage == "redis" ? true : false
+  deploy            = var.deploy && var.post_storage == "cache" ? true : false
   credentials_path  = var.credentials_path
   writer            = var.writer
   reader            = var.reader

@@ -39,11 +39,19 @@ variable "deploy" {
 variable "post_storage" {
   description   = "Storage for posts"
   type          = string
+  validation {
+    condition     = contains(["dynamo", "s3", "cache", "mysql"], var.post_storage)
+    error_message = "Invalid value for post_storage. Possible values: dynamo, s3, cache, mysql"
+  } 
 }
 
 variable "notification_storage" {
   description   = "Storage for notifications"
   type          = string
+  validation {
+    condition     = contains(["sns", "mq"], var.notification_storage)
+    error_message = "Invalid value for notification_storage. Possible values: dynamo, s3, cache, mysql"
+  } 
 }
 
 # ------

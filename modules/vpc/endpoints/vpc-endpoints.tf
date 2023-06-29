@@ -15,20 +15,7 @@ data "aws_region" "current" {
 # Create VPC endpoints
 # --------------------
 
-resource "aws_vpc_endpoint" "gateway_dynamodb" {
-  count               = var.service == "dynamo" ? 1 : 0
-  vpc_id              = local.vpc_config[data.aws_region.current.name].vpc_id
-  service_name        = "com.amazonaws.${data.aws_region.current.name}.dynamodb"
-  vpc_endpoint_type   = "Gateway"
-  route_table_ids     = [local.vpc_config[data.aws_region.current.name].route_table_id]
-
-  tags = {
-    Name = var.service
-  }
-}
-
-resource "aws_vpc_endpoint" "interface_sns_or_sqs" {
-  count               = var.service == "sns" || var.service == "sqs" ? 1 : 0
+resource "aws_vpc_endpoint" "interface_sns_sqs" {
   vpc_id              = local.vpc_config[data.aws_region.current.name].vpc_id
   service_name        = "com.amazonaws.${data.aws_region.current.name}.${var.service}"
   vpc_endpoint_type   = "Interface"

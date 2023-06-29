@@ -1,5 +1,5 @@
 variable "deploy" {
-  description   = "Deploy redis cluster"
+  description   = "Deploy cache cluster"
   default       = true
   type          = bool
 }

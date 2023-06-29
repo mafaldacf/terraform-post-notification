@@ -12,13 +12,13 @@ credentials_path = "~/.aws/credentials"
 #
 # - rendezvous                :bool   (optional: false by default)
 #
-# - post_storage              :string (required)
-# - notification_storage      :string (required)
+# - post_storage              :string (required: {dynamo, s3, cache, mysql}
+# - notification_storage      :string (required: {sns, mq}
 
 
 writer="eu-central-1"
 reader="us-east-1"
 
 deploy = true
-post_storage = "redis"
+post_storage = "mysql"
 notification_storage = "sns"
