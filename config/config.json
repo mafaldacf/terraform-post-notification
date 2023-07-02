@@ -2,44 +2,51 @@
     "vpc" : {
         "vpc_cidr_blocks": {
             "eu-central-1": "50.0.0.0/16",
-            "us-east-1"   : "51.0.0.0/16"
+            "us-east-1"   : "51.0.0.0/16",
+            "ap-southeast-1"   : "52.0.0.0/16"
         },
         "subnet_cidr_blocks": {
             "eu-central-1": ["50.0.0.0/20", "50.0.16.0/20"],
-            "us-east-1": ["51.0.0.0/20", "51.0.16.0/20"]
+            "us-east-1": ["51.0.0.0/20", "51.0.16.0/20"],
+            "ap-southeast-1": ["52.0.0.0/20", "52.0.16.0/20"]
         },
         "rendezvous_port": {
             "eu-central-1": 8001,
-            "us-east-1": 8002
+            "us-east-1": 8002,
+            "ap-southeast-1": 8002
         },
         "ssh_cidr": "0.0.0.0/0"
     },
     "ec2": {
         "ami": {
             "eu-central-1": "ami-061322694d8421aad",
-            "us-east-1": "ami-037df0c837ccf1074"
+            "us-east-1": "ami-037df0c837ccf1074",
+            "ap-southeast-1": "tba"
         },
         "rsa_keypair_name": {
             "eu-central-1": "rendezvous-eu",
-            "us-east-1": "rendezvous-us"
+            "us-east-1": "rendezvous-us",
+            "ap-southeast-1": "tba"
         }
     },
     "s3": {
         "bucket_name_lambdas": {
-            "eu-central-1": "antipode-lambda-eu-2",
-            "us-east-1": "antipode-lambda-us-2"
+            "eu-central-1": "antipode-lambda-eu",
+            "us-east-1": "antipode-lambda-us",
+            "ap-southeast-1": "antipode-lambda-ap"
         },
         "bucket_name_posts": {
-            "eu-central-1": "antipode-lambda-posts-eu-2",
-            "us-east-1": "antipode-lambda-posts-us-2"
+            "eu-central-1": "antipode-lambda-posts-eu",
+            "us-east-1": "antipode-lambda-posts-us",
+            "ap-southeast-1": "antipode-lambda-posts-ap"
         },
         "s3_role_arn": "arn:aws:iam::851889773113:role/antipode-lambda-s3-admin"
     },
     "sns": {
-        "topic_name": "antipode-lambda-notifications-test"
+        "topic_name": "antipode-lambda-notifications"
     },
     "sqs": {
-        "queue_name": "antipode-lambda-eval-test"
+        "queue_name": "antipode-lambda-eval"
     },
     "dynamo": {
         "tables_keys": {

@@ -23,9 +23,9 @@ resource "aws_s3_bucket_public_access_block" "lambdas" {
   restrict_public_buckets = true
 }
 
-# --------------------------------------
-# Buckets for posts with replication rule
-# ---------------------------------------
+# -----------------
+# Buckets for posts
+# -----------------
 
 
 resource "aws_s3_bucket" "posts" {
@@ -47,6 +47,10 @@ resource "aws_s3_bucket_versioning" "posts" {
     status = "Enabled"
   }
 }
+
+# ----------------------
+# Posts Replication Rule
+# ----------------------
 
 # README antipode-lambda: priority?? what and where is this
 resource "aws_s3_bucket_replication_configuration" "writer_to_reader" {

@@ -8,12 +8,20 @@ variable "writer" {
   description   = "The AWS writer region"
   default       = "eu-central-1"
   type          = string
+  validation {
+    condition     = contains(["eu-central-1", "us-east-1", "ap-southeast-1"], var.writer)
+    error_message = "Invalid writer region. Possible values: eu-central-1, us-east-1, ap-southeast-1"
+  }
 }
 
 variable "reader" {
   description   = "The AWS reader region"
   default       = "us-east-1"
   type          = string
+  validation {
+    condition     = contains(["eu-central-1", "us-east-1", "ap-southeast-1"], var.reader)
+    error_message = "Invalid reader region. Possible values: eu-central-1, us-east-1, ap-southeast-1"
+  } 
 }
 
 # ----------
@@ -32,9 +40,9 @@ variable "deploy" {
   default       = false
 }
 
-# -------
-# Storage
-# -------
+# ------------------------------
+# Deploy: Storage and Rendezvous
+# ------------------------------
 
 variable "post_storage" {
   description   = "Storage for posts"
@@ -54,12 +62,8 @@ variable "notification_storage" {
   } 
 }
 
-# ------
-# Extras
-# ------
-
 variable "rendezvous" {
-  description   = "Initialize an ec2 instance for rendezvous in writer and reader regions"
+  description   = "Initialize an EC2 instance for rendezvous in writer and reader regions"
   default       = false
   type          = bool
 }
