@@ -36,7 +36,7 @@ provider "aws" {
 
 module "init_vpc_eu" {
   source           = "./modules/vpc"
-  count            = var.init ? 1 : 0
+  count            = var.type == "init" ? 1 : 0
   providers = {
     aws = aws.eu
   }
@@ -44,7 +44,7 @@ module "init_vpc_eu" {
 
 module "init_vpc_us" {
   source           = "./modules/vpc"
-  count            = var.init ? 1 : 0
+  count            = var.type == "init" ? 1 : 0
   providers = {
     aws = aws.us
   }
@@ -52,7 +52,7 @@ module "init_vpc_us" {
 
 module "init_vpc_ap" {
   source           = "./modules/vpc"
-  count            = var.init ? 1 : 0
+  count            = var.type == "init" ? 1 : 0
   providers = {
     aws = aws.ap
   }
@@ -64,19 +64,19 @@ module "init_vpc_ap" {
 
 resource "local_file" "output_vpc_config_eu" {
   filename  = "config/vpc_eu-central-1.json"
-  count     = var.init ? 1 : 0
+  count     = var.type == "init" ? 1 : 0
   content   = jsonencode(module.init_vpc_eu)
 }
 
 resource "local_file" "output_vpc_config_us" {
   filename  = "config/vpc_us-east-1.json"
-  count     = var.init ? 1 : 0
+  count     = var.type == "init" ? 1 : 0
   content   = jsonencode(module.init_vpc_us)
 }
 
 resource "local_file" "output_vpc_config_ap" {
   filename  = "config/vpc_ap-southeast-1.json"
-  count     = var.init ? 1 : 0
+  count     = var.type == "init" ? 1 : 0
   content   = jsonencode(module.init_vpc_ap)
 }
 
@@ -84,7 +84,7 @@ resource "local_file" "output_vpc_config_ap" {
 
 module "init_sns" {
   source            = "./modules/sns"
-  count             = var.init ? 1 : 0
+  count             = var.type == "init" ? 1 : 0
   providers = {
     aws = aws.eu
   }
@@ -92,7 +92,7 @@ module "init_sns" {
 
 module "init_sqs_us" {
   source            = "./modules/sqs"
-  count             = var.init ? 1 : 0
+  count             = var.type == "init" ? 1 : 0
   providers = {
     aws = aws.us
   }
@@ -100,7 +100,7 @@ module "init_sqs_us" {
 
 module "init_sqs_ap" {
   source            = "./modules/sqs"
-  count             = var.init ? 1 : 0
+  count             = var.type == "init" ? 1 : 0
   providers = {
     aws = aws.ap
   }
@@ -109,7 +109,7 @@ module "init_sqs_ap" {
 # first we need to create a peering connection from reader
 module "init_vpc_peering_us" {
   source           = "./modules/vpc/peering"
-  count            = var.init ? 1 : 0
+  count            = var.type == "init" ? 1 : 0
   peering_region   = "eu-central-1"
   in_reader_region = true
   providers = {
@@ -119,7 +119,7 @@ module "init_vpc_peering_us" {
 
 module "init_vpc_peering_ap" {
   source           = "./modules/vpc/peering"
-  count            = var.init ? 1 : 0
+  count            = var.type == "init" ? 1 : 0
   peering_region   = "eu-central-1"
   in_reader_region = true
   providers = {
@@ -129,7 +129,7 @@ module "init_vpc_peering_ap" {
 
 module "init_vpc_peering_writer_to_reader_us" {
   source           = "./modules/vpc/peering"
-  count            = var.init ? 1 : 0
+  count            = var.type == "init" ? 1 : 0
   peering_region   = "us-east-1" 
   providers = {
     aws = aws.writer
@@ -138,7 +138,7 @@ module "init_vpc_peering_writer_to_reader_us" {
 
 module "init_vpc_peering_writer_to_reader_ap" {
   source           = "./modules/vpc/peering"
-  count            = var.init ? 1 : 0
+  count            = var.type == "init" ? 1 : 0
   peering_region   = "ap-southeast-1" 
   providers = {
     aws = aws.writer
@@ -149,7 +149,7 @@ module "init_vpc_peering_writer_to_reader_ap" {
 
 module "init_dynamo" {
   source            = "./modules/dynamo"
-  count             = var.init ? 1 : 0
+  count             = var.type == "init" ? 1 : 0
   reader            = var.reader
   providers = {
     aws = aws.writer
@@ -158,7 +158,7 @@ module "init_dynamo" {
 
 module "init_s3_reader" {
   source            = "./modules/s3"
-  count             = var.init ? 1 : 0
+  count             = var.type == "init" ? 1 : 0
   region            = var.reader
   providers = {
     aws = aws.reader
@@ -167,7 +167,7 @@ module "init_s3_reader" {
 
 module "init_s3_writer" {
   source            = "./modules/s3"
-  count             = var.init ? 1 : 0
+  count             = var.type == "init" ? 1 : 0
 
   # create a replication rule from writer to reader
   replication_rule  = true
@@ -205,7 +205,7 @@ module "create_vpc_endpoint_writer_sqs" {
 
 module "deploy_ec2_writer" {
   source            = "./modules/ec2"
-  count             = var.deploy && var.rendezvous ? 1 : 0
+  count             = var.type == "deploy" && var.rendezvous ? 1 : 0
   providers = {
     aws = aws.writer
   }
@@ -213,7 +213,7 @@ module "deploy_ec2_writer" {
 
 module "deploy_ec2_reader" {
   source            = "./modules/ec2"
-  count             = var.deploy && var.rendezvous ? 1 : 0
+  count             = var.type == "deploy" && var.rendezvous ? 1 : 0
   providers = {
     aws = aws.reader
   }
@@ -221,7 +221,7 @@ module "deploy_ec2_reader" {
 
 module "deploy_mq_writer" {
   source            = "./modules/mq"
-  count             = var.deploy && var.notification_storage == "mq" ? 1 : 0
+  count             = var.type == "deploy" && var.notification_storage == "mq" ? 1 : 0
   providers = {
     aws = aws.writer
   }
@@ -229,7 +229,7 @@ module "deploy_mq_writer" {
 
 module "deploy_mq_reader" {
   source            = "./modules/mq"
-  count             = var.deploy && var.notification_storage == "mq" ? 1 : 0
+  count             = var.type == "deploy" && var.notification_storage == "mq" ? 1 : 0
   providers = {
     aws = aws.reader
   }
@@ -241,7 +241,7 @@ module "deploy_cache" {
   # REMINDER:
   # cache module uses multiple aws provides which conflicts with using "count" here
   # solution: pass deploy flag and the module will be the one deciding
-  deploy            = var.deploy && var.post_storage == "cache" ? true : false
+  deploy            = var.type == "deploy" && var.post_storage == "cache" ? true : false
   credentials_path  = var.credentials_path
   writer            = var.writer
   reader            = var.reader

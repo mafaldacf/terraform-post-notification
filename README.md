@@ -32,7 +32,9 @@ If the initial and persistent resources are not deployed yet, you are in the rig
 
 Otherwise, provide the existing configuration details in `config/vpc_{region}.json` for existing regions (eu-central-1, us-east-1, ap-southeast-1) and skip this.
 
-    terraform apply -var="init=true"
+    terraform apply -var="type=init"
+
+Or simply do apply with `terraform apply` and provide arguments later.
 
 **IMPORTANT NOTES**:
 
@@ -54,7 +56,9 @@ The remaining resources are only deployed specifically in the `writer` and `read
 
 Deploy resources and specify the `post_storage` (dynamo, s3, cache, mysql) and `notification_storage` (sns, mq).
 
-    terraform apply -var="deploy=true" -var="post_storage=mysql" -var="notification_storage=sns"
+    terraform apply -var="type=deploy" -var="post_storage=mysql" -var="notification_storage=sns"
+
+Or simply do apply with `terraform apply` and provide arguments later.
 
 **REMINDER**: don't forget to destroy all resources at the end!
 

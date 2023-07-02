@@ -17,6 +17,6 @@ credentials_path = "~/.aws/credentials"
 writer="eu-central-1"
 reader="us-east-1"
 
-deploy = true
+type = "deploy"
 post_storage = "mysql"
 notification_storage = "sns"

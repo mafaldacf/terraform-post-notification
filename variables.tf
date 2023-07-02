@@ -28,16 +28,13 @@ variable "reader" {
 # Usage Type
 # ----------
 
-variable "init" {
+variable "type" {
   description   = "Initialize primary AWS resources"
-  type          = bool
-  default       = false
-}
-
-variable "deploy" {
-  description   = "Deploy AWS resources for current application"
-  type          = bool
-  default       = false
+  type          = string
+  validation {
+    condition     = contains(["init", "deploy"], var.type)
+    error_message = "Invalid type. Possible values: init, deploy"
+  } 
 }
 
 # ------------------------------
@@ -64,6 +61,5 @@ variable "notification_storage" {
 
 variable "rendezvous" {
   description   = "Initialize an EC2 instance for rendezvous in writer and reader regions"
-  default       = false
   type          = bool
 }
