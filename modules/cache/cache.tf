@@ -51,7 +51,7 @@ resource "aws_elasticache_subnet_group" "reader" {
 resource "aws_elasticache_replication_group" "primary" {
   provider                      = aws.writer
   count                         = var.deploy == true ? 1 : 0
-  replication_group_id          = "${local.global_cluster_name}-writer"
+  replication_group_id          = "${local.global_cluster_name}-${substr(var.writer, 0, 2)}"
   description                   = "Primary elasticache cluster in writer region"
   node_type                     = local.node_type
   port                          = local.port
@@ -66,7 +66,7 @@ resource "aws_elasticache_replication_group" "primary" {
 resource "aws_elasticache_replication_group" "secondary" {
   provider                      = aws.reader
   count                         = var.deploy == true ? 1 : 0
-  replication_group_id          = "${local.global_cluster_name}-reader"
+  replication_group_id          = "${local.global_cluster_name}-${substr(var.reader, 0, 2)}"
   description                   = "Secondary elasticache cluster in reader region"
   global_replication_group_id   = aws_elasticache_global_replication_group.global[0].global_replication_group_id
   port                          = local.port
