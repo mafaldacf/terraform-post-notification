@@ -18,5 +18,6 @@ writer="eu-central-1"
 reader="us-east-1"
 
 type = "deploy"
-post_storage = "mysql"
+rendezvous = false
+post_storage = "cache"
 notification_storage = "sns"

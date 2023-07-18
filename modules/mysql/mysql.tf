@@ -28,6 +28,7 @@ provider "aws" {
 # --------------------
 
  resource "aws_db_parameter_group" "mysql_parameter_group_primary_region" {
+  count       = var.deploy == true ? 1 : 0
   provider    = aws.writer
   name        = "antipode-lambda-2"
   family      = "aurora-mysql5.7"
@@ -38,6 +39,7 @@ provider "aws" {
 }
 
 resource "aws_db_parameter_group" "mysql_parameter_group_secondary_region" {
+  count       = var.deploy == true ? 1 : 0
   provider    = aws.reader
   name        = "antipode-lambda-2"
   family      = "aurora-mysql5.7"
@@ -48,6 +50,7 @@ resource "aws_db_parameter_group" "mysql_parameter_group_secondary_region" {
 }
 
 resource "aws_rds_global_cluster" "global_database" {
+  count                     = var.deploy == true ? 1 : 0
   provider                  = aws.writer
   global_cluster_identifier = "antipode-lambda"
   engine                    = "aurora-mysql"
@@ -57,10 +60,11 @@ resource "aws_rds_global_cluster" "global_database" {
 }
 
 resource "aws_rds_cluster" "primary_cluster" {
+  count                     = var.deploy == true ? 1 : 0
   provider                  = aws.writer
-  global_cluster_identifier = aws_rds_global_cluster.global_database.id
-  engine                    = aws_rds_global_cluster.global_database.engine
-  engine_version            = aws_rds_global_cluster.global_database.engine_version
+  global_cluster_identifier = aws_rds_global_cluster.global_database[0].id
+  engine                    = aws_rds_global_cluster.global_database[0].engine
+  engine_version            = aws_rds_global_cluster.global_database[0].engine_version
   availability_zones        = ["${var.writer}a"]
   cluster_identifier        = "antipode-lambda-${substr(var.writer, 0, 2)}"
   master_username           = "antipode"
@@ -71,13 +75,14 @@ resource "aws_rds_cluster" "primary_cluster" {
 }
 
 resource "aws_rds_cluster_instance" "writer_instance" {
+  count                         = var.deploy == true ? 1 : 0
   provider                      = aws.writer
-  cluster_identifier            = aws_rds_cluster.primary_cluster.id
-  engine                        = aws_rds_global_cluster.global_database.engine
-  engine_version                = aws_rds_global_cluster.global_database.engine_version
-  identifier                    = "${aws_rds_cluster.primary_cluster.cluster_identifier}-instance"
+  cluster_identifier            = aws_rds_cluster.primary_cluster[0].id
+  engine                        = aws_rds_global_cluster.global_database[0].engine
+  engine_version                = aws_rds_global_cluster.global_database[0].engine_version
+  identifier                    = "${aws_rds_cluster.primary_cluster[0].cluster_identifier}-instance"
   instance_class                = "db.r3.large"
-  db_parameter_group_name       = aws_db_parameter_group.mysql_parameter_group_primary_region.name
+  db_parameter_group_name       = aws_db_parameter_group.mysql_parameter_group_primary_region[0].name
   db_subnet_group_name          = "default"
   publicly_accessible           = true
   performance_insights_enabled  = false
@@ -86,10 +91,11 @@ resource "aws_rds_cluster_instance" "writer_instance" {
 
 
 resource "aws_rds_cluster" "secondary_cluster" {
+  count                     = var.deploy == true ? 1 : 0
   provider                  = aws.reader
-  global_cluster_identifier = aws_rds_global_cluster.global_database.id
-  engine                    = aws_rds_global_cluster.global_database.engine
-  engine_version            = aws_rds_global_cluster.global_database.engine_version
+  global_cluster_identifier = aws_rds_global_cluster.global_database[0].id
+  engine                    = aws_rds_global_cluster.global_database[0].engine
+  engine_version            = aws_rds_global_cluster.global_database[0].engine_version
   availability_zones        = ["${var.reader}a"]
   cluster_identifier        = "antipode-lambda-${substr(var.reader, 0, 2)}"
   db_subnet_group_name      = "default"
@@ -100,13 +106,14 @@ resource "aws_rds_cluster" "secondary_cluster" {
 }
 
 resource "aws_rds_cluster_instance" "reader_instance" {
+  count                         = var.deploy == true ? 1 : 0
   provider                      = aws.reader
-  cluster_identifier            = aws_rds_cluster.secondary_cluster.id
-  engine                        = aws_rds_global_cluster.global_database.engine
-  engine_version                = aws_rds_global_cluster.global_database.engine_version
-  identifier                    = "${aws_rds_cluster.secondary_cluster.cluster_identifier}-instance"
+  cluster_identifier            = aws_rds_cluster.secondary_cluster[0].id
+  engine                        = aws_rds_global_cluster.global_database[0].engine
+  engine_version                = aws_rds_global_cluster.global_database[0].engine_version
+  identifier                    = "${aws_rds_cluster.secondary_cluster[0].cluster_identifier}-instance"
   instance_class                = "db.r3.large"
-  db_parameter_group_name       = aws_db_parameter_group.mysql_parameter_group_secondary_region.name
+  db_parameter_group_name       = aws_db_parameter_group.mysql_parameter_group_secondary_region[0].name
   db_subnet_group_name          = "default"
   publicly_accessible           = true
   performance_insights_enabled  = false

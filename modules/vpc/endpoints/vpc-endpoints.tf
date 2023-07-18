@@ -21,6 +21,7 @@ resource "aws_vpc_endpoint" "interface_sns_sqs" {
   vpc_endpoint_type   = "Interface"
   subnet_ids          = [local.vpc_config[data.aws_region.current.name].subnet_ids[0]]
   security_group_ids  = [local.vpc_config[data.aws_region.current.name].security_group_id]
+  private_dns_enabled = true
 
   tags = {
     Name = var.service
